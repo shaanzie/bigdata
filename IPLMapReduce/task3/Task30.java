@@ -1,7 +1,7 @@
 import java.io.IOException;
 import java.util.StringTokenizer;
 
-import org.apache.hadoop.io.Writable; 
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
@@ -37,25 +37,35 @@ public class Task30{
 
   public static class BReducer
        extends Reducer<Text, IntArrayWritable, Text, Text> {
-   
+
 	private Text result = new Text();
 private int totalBalls;
     public void reduce(Text key, Iterable<IntArrayWritable> values,
                         org.apache.hadoop.mapreduce.Reducer<Text, IntArrayWritable, Text, Text>.Context context
                        ) throws IOException, InterruptedException {
-      int ballsnum = 0;
+      int extraballsnum = 0;
       int runs = 0;
       totalBalls = 0;
 
       for (IntArrayWritable val : values) {
         Writable[] vals = val.get();
-        ballsnum += Integer.valueOf(vals[0].toString());
-        runs += Integer.valueOf(vals[1].toString());
-	totalBalls += 1;
+        extraballsnum = Integer.valueOf(vals[0].toString());
+       totalBalls += 1;
+	 if(extraballsnum == 0){
+
+           runs += Integer.valueOf(vals[1].toString());
+         }
+
+         else{
+           runs += 1;
+         }
+
       }
 
-      result.set(new Text(Integer.toString(ballsnum) + "," + Integer.toString(runs) + "," + Integer.toString(totalBalls)));
+	if(totalBalls > 5){
+      result.set(new Text("," + Integer.toString(runs) + "," + Integer.toString(totalBalls)));
       context.write(key, result);
+	}
     }
   }
   static class IntArrayWritable extends ArrayWritable {
@@ -82,9 +92,9 @@ private int totalBalls;
 //    job.setCombinerClass(BReducer.class);
     job.setReducerClass(BReducer.class);
     job.setOutputKeyClass(Text.class);
- 
+
     job.setMapOutputValueClass(IntArrayWritable.class);
- 	 
+
     FileInputFormat.addInputPath(job, new Path(args[0]));
     FileOutputFormat.setOutputPath(job, new Path(args[1]));
     System.exit(job.waitForCompletion(true) ? 0 : 1);
