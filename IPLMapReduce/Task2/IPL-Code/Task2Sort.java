@@ -184,7 +184,7 @@ public class Task2Sort {
               public void reduce(MyWritableComparable key, Iterable<IntWritable> vals,
                   org.apache.hadoop.mapreduce.Reducer<MyWritableComparable, IntWritable, Text, Text>.Context context)
                   throws IOException, InterruptedException{
-  		                context.write(new Text(key.getKey1() + ", " + key.getKey4()), new Text("balls: " + key.getKey3().toString() + " ," +  "wickets: " + key.getKey2().toString()));
+  		                context.write(new Text(key.getKey1() + "," + key.getKey4() + "," +  key.getKey2().toString() + "," +key.getKey3().toString()),new Text(""));
               }
             }
 
