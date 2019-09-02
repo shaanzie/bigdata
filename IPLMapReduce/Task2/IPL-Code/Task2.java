@@ -29,15 +29,15 @@ public class Task2{
 		    int[] balls = new int[2];
         if(values[9].length() != 2)
         {
+          balls[0] = 1;
           balls[1] = 1;
-          balls[2] = 1;
           IntArrayWritable ball_data = new IntArrayWritable(balls);
           context.write(new Text(values[4] + "," + values[6]), ball_data);
         }
         else
         {
-          balls[1] = 1;
-          balls[2] = 0;
+          balls[0] = 1;
+          balls[1] = 0;
           IntArrayWritable ball_data = new IntArrayWritable(balls);
           context.write(new Text(values[4] + "," + values[6]), ball_data);
         }
@@ -59,7 +59,7 @@ private int totalBalls;
 
       for (IntArrayWritable val : values) {
         Writable[] vals = val.get();
-        wickets = Integer.valueOf(vals[1].toString());
+        wickets += Integer.valueOf(vals[1].toString());
         totalBalls += 1;
 
       }
