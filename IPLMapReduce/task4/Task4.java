@@ -136,19 +136,17 @@ public class Task4{
             throws IOException, InterruptedException{
                 String line = Value.toString();
                 String[] values = line.split(",");
-
-                String venue = "unset";
-
-                if(values[1].equals("venue")){
-                  
-			if(val.size() == 0){
+		if(val.size() == 0){
 
 				val.add("na");
 			}
-			else if(!val.get(0).equals(values[2])){
+                String venue = "unset";
 
+                if(values[1].equals("venue")){
+   
+			
 				val.set(0, values[2]);
-			}			
+				
 		}
 
                 if(values[0].equals("ball")){
@@ -160,60 +158,69 @@ public class Task4{
 
       public static class BReducer
         extends Reducer<MyWritableComparable, Text, Text, Text>{
-          private double max = -1;
-          private String bat;
+          
           public void reduce(MyWritableComparable key, Iterable<Text> values,
           org.apache.hadoop.mapreduce.Reducer<MyWritableComparable, Text, Text, Text>.Context context
           ) throws IOException, InterruptedException {
+		
+		double max = -1;
+		String bat;
+            //int count = 0;
+            //for (Text val: values){
+             // count += 1;
+            //}
 
-            int count = 0;
-            for (Text val: values){
-              count += 1;
-            }
-
-            context.write(new Text(key.getKey1()), new Text(Integer.toString(count)));
-          //   String batsman = "new";
-          //   double current = 0;
-          //   double currentBalls = 0;
-          //
-          //   for(IntWritable val: values){
-          //     String[] records = key.toString().split(",");
-          //     if (!batsman.equals(records[1])){
-          //       double sr;
-          //
-          //       if(currentBalls != 0) sr = current/currenBalls;
-          //       else sr = 0;
-          //
-          //       if (sr > max){
-          //         max = sr;
-          //         bat = batsman;
-          //       }
-          //
-          //       batsman = records[1];
-          //     }
-          //
-          //     else{
-          //       currentBalls += 1;
-          //       current += records[2];
-          //     }
-          //
-          //   }
+            //context.write(new Text(key.getKey1()), new Text(Integer.toString(count)));
+             ArrayList<String> batsman = new ArrayList<String>();	
+		batsman.add("zzzz");
+             double current = 0;
+             double currentBalls = 0;
+		ArrayList<String> lastbat = new ArrayList<String>();
+		lastbat.add("zzz");
+          
+             for(Text val: values){
+               	String[] records = val.toString().split(",");
+		lastbat.set(0, records[1]);
+               if (!batsman.get(0).equals(records[0])){
+                double sr;
+          
+                 if(currentBalls != 0) sr = current/currentBalls;
+                 else sr = 0;
+          
+                 if (sr > max){
+                   max = sr;
+                   batsman.set(0, records[0]);
+                 }
+		
+		current = 0;
+		currentBalls = 0;
+          
+                 
+               }
+          
+               else{
+                 currentBalls += 1;
+                 current += Integer.parseInt(records[1]);
+               }
+          
+             }
           //
           //   //last batsman
-          //   double sr;
-          //
-          //   if(currentBalls != 0) sr = current/currenBalls;
-          //   else sr = 0;
-          //
-          //   if (sr > max){
-          //     max = sr;
-          //     bat = batsman;
-          //   }
-          //               super(MyWritableComparable.class, true);
-          //   context.write(new Text(key.toString().split(",")[0]), new Text(bat));
-          // }
+             double sr;
+         
+            if(currentBalls != 0) sr = current/currentBalls;
+             else sr = 0;
+          
+           if (sr > max){
+               max = sr;
+               batsman.set(0, lastbat.get(0));
+//who knows what value this will have after the loop dies
+            }
+                       
+             context.write(new Text(key.toString().split(",")[0]), new Text(batsman.get(0)));
+           }
         }
-}
+
 
         public static class NaturalKeyComp extends WritableComparator{
           protected NaturalKeyComp(){
