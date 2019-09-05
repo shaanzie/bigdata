@@ -20,32 +20,110 @@ import java.io.IOException;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 
+public class Task2{
 
-public class Task2compiled{
-  public static int stringCompare(String str1, String str2)
+public static class BMapper1
+       extends Mapper<Object, Text, Text, IntArrayWritable>{
+
+    private final static IntWritable one = new IntWritable(1);
+    private Text word = new Text();
+
+    public void map(Object key, Text value, org.apache.hadoop.mapreduce.Mapper<Object, Text, Text, IntArrayWritable>.Context context) throws IOException, InterruptedException{
+      String line = value.toString();
+      String[] values = line.split(",");
+
+      if(values[0].equals("ball")){
+		    int[] balls = new int[2];
+        if(values[9].length() != 2)
         {
-          int l1 = str1.length();
-          int l2 = str2.length();
-          int lmin = Math.min(l1, l2);
+          balls[0] = 1;
+          balls[1] = 1;
+          IntArrayWritable ball_data = new IntArrayWritable(balls);
+          context.write(new Text(values[4] + "," + values[6]), ball_data);
+        }
+        else
+        {
+          balls[0] = 1;
+          balls[1] = 0;
+          IntArrayWritable ball_data = new IntArrayWritable(balls);
+          context.write(new Text(values[4] + "," + values[6]), ball_data);
+        }
+	}
+    }
+  }
 
-          for (int i = 0; i < lmin; i++) {
-              int str1_ch = (int)str1.charAt(i);
-              int str2_ch = (int)str2.charAt(i);
+  public static class BReducer1
+       extends Reducer<Text, IntArrayWritable, Text, Text> {
 
-              if (str1_ch != str2_ch) {
-                  return str1_ch - str2_ch;
-              }
+	private Text result = new Text();
+private int totalBalls;
+    public void reduce(Text key, Iterable<IntArrayWritable> values,
+                        org.apache.hadoop.mapreduce.Reducer<Text, IntArrayWritable, Text, Text>.Context context
+                       ) throws IOException, InterruptedException {
+          int wickets = 0;
+          int runs = 0;
+          totalBalls = 0;
+    
+          for (IntArrayWritable val : values) {
+            Writable[] vals = val.get();
+            wickets += Integer.valueOf(vals[1].toString());
+            totalBalls += 1;
+    
           }
-
-          if (l1 != l2) {
-              return l1 - l2;
-          }
-
-          else {
-              return 0;
-          }
+    
+      if(totalBalls > 5){
+          result.set(new Text("," + Integer.toString(wickets) + "," + Integer.toString(totalBalls)));
+          context.write(key, result);
       }
+    }
+  }
+  static class IntArrayWritable extends ArrayWritable {
 
+        public IntArrayWritable() {
+            super(IntWritable.class);
+        }
+
+        public IntArrayWritable(int[] integers) {
+            super(IntWritable.class);
+            IntWritable[] ints = new IntWritable[integers.length];
+            for (int i = 0; i < ints.length; i++) {
+                ints[i] = new IntWritable(integers[i]);
+            }
+            set(ints);
+        }
+    }
+
+
+
+
+public static int stringCompare(String str1, String str2)
+    {
+
+        int l1 = str1.length();
+        int l2 = str2.length();
+        int lmin = Math.min(l1, l2);
+
+        for (int i = 0; i < lmin; i++) {
+            int str1_ch = (int)str1.charAt(i);
+            int str2_ch = (int)str2.charAt(i);
+
+            if (str1_ch != str2_ch) {
+                return str1_ch - str2_ch;
+            }
+        }
+
+        // Edge case for strings like
+        // String 1="Geeks" and String 2="Geeksforgeeks"
+        if (l1 != l2) {
+            return l1 - l2;
+        }
+
+        // If none of the above conditions is true,
+        // it implies both the strings are equal
+        else {
+            return 0;
+        }
+    }
   static class MyWritableComparable implements WritableComparable<MyWritableComparable> {
 
       protected String key1 = new String();
@@ -136,38 +214,38 @@ public class Task2compiled{
           //                                         ? 0 : 1)) : 1));
 
 
-	         if(thiskey2 > thatkey2) return -1;
-	         else{
-		           if(thiskey2 == thatkey2){
-			              if(thiskey3 > thatkey3){
-				                  return 1;
-			              }
-			         else if(thiskey3 == thatkey3){
-				             int x = stringCompare(thiskey1, thatkey1);
+	  if(thiskey2 > thatkey2) return -1;
+	  else{
+		if(thiskey2 == thatkey2){
+			if(thiskey3 > thatkey3){
+				return 1;
+			}
+			else if(thiskey3 == thatkey3){
+				int x = stringCompare(thiskey1, thatkey1);
 
-              				if(x < 0){
-              					return -1;
-              				}
-              				else{
-					                 if(x == 0) return 0;
-					                 else return 1;
-				              }
-			          }
-			          return	-1;
-		         }
-		         return 1;
-	          }
-          }
+				if(x<0){
+					return -1;
+				}
+				else{
+					if(x==0) return 0;
+					else return 1;
+				}
+			}
+			return	-1;
+		}
+		return 1;
+	}
+      }
     }
 
 
-      public static class BMapperSort extends Mapper<Object, Text, MyWritableComparable, IntWritable>{
+      public static class BMapper2 extends Mapper<Object, Text, MyWritableComparable, IntWritable>{
 
         public void map(Object key, Text value,
-            org.apache.hadoop.mapreduce.Mapper<Object, Text, MyWritableComparable, IntWritable>.Context context)
-            throws IOException, InterruptedException
-            {
-              String line = value.toString();
+org.apache.hadoop.mapreduce.Mapper<Object, Text, MyWritableComparable, IntWritable>.Context context)
+          throws IOException, InterruptedException
+        {
+          String line = value.toString();
 
               String[] values = line.split(",");
               String bat = values[0];
@@ -175,120 +253,62 @@ public class Task2compiled{
               Integer wickets = Integer.parseInt(values[2]);
               Integer balls = Integer.parseInt(values[3]);
     	        context.write(new MyWritableComparable(new Text(bowl), wickets, balls, new Text(bat)), new IntWritable(1));
+
         }
       }
 
-        public static class BReducerSort
-            extends Reducer<MyWritableComparable, IntWritable, Text, Text>{
+      public static class BReducer2
+          extends Reducer<MyWritableComparable, IntWritable, Text, Text>{
 
-              public void reduce(MyWritableComparable key, Iterable<IntWritable> vals,
-                  org.apache.hadoop.mapreduce.Reducer<MyWritableComparable, IntWritable, Text, Text>.Context context)
-                  throws IOException, InterruptedException{
-  		                context.write(new Text(key.getKey1() + "," + key.getKey4() + "," +  key.getKey2().toString() + "," +key.getKey3().toString()),new Text(""));
-              }
+            public void reduce(MyWritableComparable key, Iterable<IntWritable> vals,
+    org.apache.hadoop.mapreduce.Reducer<MyWritableComparable, IntWritable, Text, Text>.Context context) throws IOException, InterruptedException{
+
+
+      context.write(new Text(key.getKey1() + "," + key.getKey4() + "," +  key.getKey2().toString() + "," +key.getKey3().toString()),new Text(""));
+              
             }
+          }
 
-  public static class BMapper
-       extends Mapper<Object, Text, Text, IntArrayWritable>{
 
-    private final static IntWritable one = new IntWritable(1);
-    private Text word = new Text();
 
-    public void map(Object key, Text value, org.apache.hadoop.mapreduce.Mapper<Object, Text, Text, IntArrayWritable>.Context context) throws IOException, InterruptedException{
-      String line = value.toString();
-      String[] values = line.split(",");
-
-      if(values[0].equals("ball")){
-		    int[] balls = new int[2];
-        if(values[9].length() != 2)
-        {
-          balls[0] = 1;
-          balls[1] = 1;
-          IntArrayWritable ball_data = new IntArrayWritable(balls);
-          context.write(new Text(values[4] + "," + values[6]), ball_data);
-        }
-        else
-        {
-          balls[0] = 1;
-          balls[1] = 0;
-          IntArrayWritable ball_data = new IntArrayWritable(balls);
-          context.write(new Text(values[4] + "," + values[6]), ball_data);
-        }
-	}
-    }
-  }
-
-  public static class BReducer
-       extends Reducer<Text, IntArrayWritable, Text, Text> {
-
-	private Text result = new Text();
-private int totalBalls;
-    public void reduce(Text key, Iterable<IntArrayWritable> values,
-                        org.apache.hadoop.mapreduce.Reducer<Text, IntArrayWritable, Text, Text>.Context context
-                       ) throws IOException, InterruptedException {
-      int wickets = 0;
-      int runs = 0;
-      totalBalls = 0;
-
-      for (IntArrayWritable val : values) {
-        Writable[] vals = val.get();
-        wickets += Integer.valueOf(vals[1].toString());
-        totalBalls += 1;
-
-      }
-
-	if(totalBalls > 5){
-      result.set(new Text("," + Integer.toString(wickets) + "," + Integer.toString(totalBalls)));
-      context.write(key, result);
-	}
-    }
-  }
-  static class IntArrayWritable extends ArrayWritable {
-
-        public IntArrayWritable() {
-            super(IntWritable.class);
-        }
-
-        public IntArrayWritable(int[] integers) {
-            super(IntWritable.class);
-            IntWritable[] ints = new IntWritable[integers.length];
-            for (int i = 0; i < ints.length; i++) {
-                ints[i] = new IntWritable(integers[i]);
-            }
-            set(ints);
-        }
-    }
 
   public static void main(String[] args) throws Exception {
-    Configuration confSort = new Configuration();
-    Job job = Job.getInstance(confSort, "bd task2");
-    job.setJarByClass(Task2compiled.class);
-    job.setMapperClass(BMapper.class);
-//    job.setCombinerClass(BReducer.class);
-    job.setReducerClass(BReducer.class);
-    job.setOutputKeyClass(Text.class);
+    Configuration conf = new Configuration();
+    Job job1 = Job.getInstance(conf, "bd task2");
+    job1.setJarByClass(Task2.class);
+    job1.setMapperClass(BMapper1.class);
+//    job1.setCombinerClass(BReducer.class);
+    job1.setReducerClass(BReducer1.class);
+     job1.setOutputKeyClass(Text.class);
 
-    job.setMapOutputValueClass(IntArrayWritable.class);
-    Path path = new Path(args[1]);
+    job1.setMapOutputValueClass(IntArrayWritable.class);
 
-    FileInputFormat.addInputPath(job, new Path(args[0]));
-    FileOutputFormat.setOutputPath(job, path);
-    // System.exit(job.waitForCompletion(true) ? 0 : 1);
-    if(job.waitForCompletion(true))
-    {
-      Configuration conf = new Configuration();
-      Job jobSort = Job.getInstance(conf, "bd task2Sort");
-      jobSort.setJarByClass(Task2compiled.class);
-      jobSort.setMapperClass(BMapperSort.class);
-  //    job.setCombinerClass(BReducer.class);
-      jobSort.setReducerClass(BReducerSort.class);
-      jobSort.setOutputKeyClass(Text.class);
-
-      job.setMapOutputValueClass(IntArrayWritable.class);
-
-      FileInputFormat.addInputPath(jobSort, path);
-      FileOutputFormat.setOutputPath(jobSort,path);
-      System.exit(job.waitForCompletion(true) ? 0 : 1);
-    }
-  }
+    FileInputFormat.addInputPath(job1, new Path(args[0]));
+    FileOutputFormat.setOutputPath(job1, new Path(args[1]));
+    if (!job1.waitForCompletion(true)) {
+  System.exit(1);
 }
+
+	Job job2 = Job.getInstance(conf, "bd task2 sd");
+
+
+job2.setJarByClass(Task2.class);
+        job2.setMapperClass(BMapper2.class);
+        // job.setCombinerClass(BReducer.class);
+        job2.setReducerClass(BReducer2.class);
+
+        job2.setOutputValueClass(Text.class);
+        job2.setMapOutputKeyClass(MyWritableComparable.class);
+	job2.setMapOutputValueClass(IntWritable.class);
+
+        FileInputFormat.addInputPath(job2, new Path(args[1]));
+        FileOutputFormat.setOutputPath(job2, new Path(args[2]));
+
+       if (!job2.waitForCompletion(true)) {
+  System.exit(1);
+}
+  }
+
+}
+
+
