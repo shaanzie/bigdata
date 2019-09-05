@@ -1,3 +1,4 @@
+
 import java.io.IOException;
 import java.util.StringTokenizer;
 
@@ -20,8 +21,8 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 
 
-public class Task2Sort {
-    public static int stringCompare(String str1, String str2)
+public class Task2compiled{
+  public static int stringCompare(String str1, String str2)
         {
           int l1 = str1.length();
           int l2 = str2.length();
@@ -187,22 +188,107 @@ public class Task2Sort {
               }
             }
 
-      public static void main(String[] args) throws Exception{
-        Configuration conf = new Configuration();
+  public static class BMapper
+       extends Mapper<Object, Text, Text, IntArrayWritable>{
 
-        Job job = Job.getInstance(conf, "Task 2 Sort");
-        job.setJarByClass(Task2Sort.class);
-        job.setMapperClass(BMapperSort.class);
-        // job.setCombinerClass(BReducer.class);
-        job.setReducerClass(BReducerSort.class);
+    private final static IntWritable one = new IntWritable(1);
+    private Text word = new Text();
 
-        job.setOutputValueClass(Text.class);
-        job.setMapOutputKeyClass(MyWritableComparable.class);
-      	job.setMapOutputValueClass(IntWritable.class);
+    public void map(Object key, Text value, org.apache.hadoop.mapreduce.Mapper<Object, Text, Text, IntArrayWritable>.Context context) throws IOException, InterruptedException{
+      String line = value.toString();
+      String[] values = line.split(",");
 
-        FileInputFormat.addInputPath(job, new Path(args[0]));
-        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+      if(values[0].equals("ball")){
+		    int[] balls = new int[2];
+        if(values[9].length() != 2)
+        {
+          balls[0] = 1;
+          balls[1] = 1;
+          IntArrayWritable ball_data = new IntArrayWritable(balls);
+          context.write(new Text(values[4] + "," + values[6]), ball_data);
+        }
+        else
+        {
+          balls[0] = 1;
+          balls[1] = 0;
+          IntArrayWritable ball_data = new IntArrayWritable(balls);
+          context.write(new Text(values[4] + "," + values[6]), ball_data);
+        }
+	}
+    }
+  }
 
-        System.exit(job.waitForCompletion(true) ? 0 : 1);
+  public static class BReducer
+       extends Reducer<Text, IntArrayWritable, Text, Text> {
+
+	private Text result = new Text();
+private int totalBalls;
+    public void reduce(Text key, Iterable<IntArrayWritable> values,
+                        org.apache.hadoop.mapreduce.Reducer<Text, IntArrayWritable, Text, Text>.Context context
+                       ) throws IOException, InterruptedException {
+      int wickets = 0;
+      int runs = 0;
+      totalBalls = 0;
+
+      for (IntArrayWritable val : values) {
+        Writable[] vals = val.get();
+        wickets += Integer.valueOf(vals[1].toString());
+        totalBalls += 1;
+
       }
+
+	if(totalBalls > 5){
+      result.set(new Text("," + Integer.toString(wickets) + "," + Integer.toString(totalBalls)));
+      context.write(key, result);
+	}
+    }
+  }
+  static class IntArrayWritable extends ArrayWritable {
+
+        public IntArrayWritable() {
+            super(IntWritable.class);
+        }
+
+        public IntArrayWritable(int[] integers) {
+            super(IntWritable.class);
+            IntWritable[] ints = new IntWritable[integers.length];
+            for (int i = 0; i < ints.length; i++) {
+                ints[i] = new IntWritable(integers[i]);
+            }
+            set(ints);
+        }
+    }
+
+  public static void main(String[] args) throws Exception {
+    Configuration confSort = new Configuration();
+    Job job = Job.getInstance(confSort, "bd task2");
+    job.setJarByClass(Task2compiled.class);
+    job.setMapperClass(BMapper.class);
+//    job.setCombinerClass(BReducer.class);
+    job.setReducerClass(BReducer.class);
+    job.setOutputKeyClass(Text.class);
+
+    job.setMapOutputValueClass(IntArrayWritable.class);
+    Path path = new Path(args[1]);
+
+    FileInputFormat.addInputPath(job, new Path(args[0]));
+    FileOutputFormat.setOutputPath(job, path);
+    // System.exit(job.waitForCompletion(true) ? 0 : 1);
+    if(job.waitForCompletion(true))
+    {
+      Configuration conf = new Configuration();
+      Job jobSort = Job.getInstance(conf, "bd task2Sort");
+      jobSort.setJarByClass(Task2compiled.class);
+      jobSort.setMapperClass(BMapperSort.class);
+  //    job.setCombinerClass(BReducer.class);
+      jobSort.setReducerClass(BReducerSort.class);
+      jobSort.setOutputKeyClass(Text.class);
+
+      job.setMapOutputValueClass(IntArrayWritable.class);
+
+      FileInputFormat.addInputPath(jobSort, path);
+      FileOutputFormat.setOutputPath(jobSort,path);
+      System.exit(job.waitForCompletion(true) ? 0 : 1);
+    }
+  }
 }

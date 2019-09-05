@@ -45,6 +45,8 @@ public class Task2{
     }
   }
 
+
+
   public static class BReducer
        extends Reducer<Text, IntArrayWritable, Text, Text> {
 
@@ -91,7 +93,7 @@ private int totalBalls;
     Job job = Job.getInstance(conf, "bd task2");
     job.setJarByClass(Task2.class);
     job.setMapperClass(BMapper.class);
-//    job.setCombinerClass(BReducer.class);
+    // job.setCombinerClass(BReducer.class);
     job.setReducerClass(BReducer.class);
     job.setOutputKeyClass(Text.class);
 
