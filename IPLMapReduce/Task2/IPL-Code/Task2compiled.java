@@ -20,7 +20,7 @@ import java.io.IOException;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 
-public class Task2{
+public class Task2compiled{
 
 public static class BMapper1
        extends Mapper<Object, Text, Text, IntArrayWritable>{
@@ -264,8 +264,9 @@ org.apache.hadoop.mapreduce.Mapper<Object, Text, MyWritableComparable, IntWritab
     org.apache.hadoop.mapreduce.Reducer<MyWritableComparable, IntWritable, Text, Text>.Context context) throws IOException, InterruptedException{
 
 
-      context.write(new Text(key.getKey1() + "," + key.getKey4() + "," +  key.getKey2().toString() + "," +key.getKey3().toString()),new Text(""));
-              
+      //context.write(new Text(key.getKey1() + "," + key.getKey4() + "," +  key.getKey2().toString() + "," +key.getKey3().toString()),new Text(""));
+      context.write(new Text(key.getKey1().toString().replaceAll("\\s","") + "," + key.getKey4().toString().replaceAll("\\s","")  + "," + key.getKey2().toString()+","+ key.getKey3().toString()), new Text(""));
+        
             }
           }
 
@@ -275,7 +276,7 @@ org.apache.hadoop.mapreduce.Mapper<Object, Text, MyWritableComparable, IntWritab
   public static void main(String[] args) throws Exception {
     Configuration conf = new Configuration();
     Job job1 = Job.getInstance(conf, "bd task2");
-    job1.setJarByClass(Task2.class);
+    job1.setJarByClass(Task2compiled.class);
     job1.setMapperClass(BMapper1.class);
 //    job1.setCombinerClass(BReducer.class);
     job1.setReducerClass(BReducer1.class);
@@ -292,7 +293,7 @@ org.apache.hadoop.mapreduce.Mapper<Object, Text, MyWritableComparable, IntWritab
 	Job job2 = Job.getInstance(conf, "bd task2 sd");
 
 
-job2.setJarByClass(Task2.class);
+job2.setJarByClass(Task2compiled.class);
         job2.setMapperClass(BMapper2.class);
         // job.setCombinerClass(BReducer.class);
         job2.setReducerClass(BReducer2.class);
