@@ -282,7 +282,7 @@ org.apache.hadoop.mapreduce.Mapper<Object, Text, MyWritableComparable, IntWritab
     job1.setMapOutputValueClass(IntArrayWritable.class);
 
     FileInputFormat.addInputPath(job1, new Path(args[0]));
-    FileOutputFormat.setOutputPath(job1, new Path(args[1]));
+    FileOutputFormat.setOutputPath(job1, new Path(args[1] + "intermediate"));
     if (!job1.waitForCompletion(true)) {
   System.exit(1);
 }
@@ -299,8 +299,8 @@ job2.setJarByClass(Task3.class);
         job2.setMapOutputKeyClass(MyWritableComparable.class);
 	job2.setMapOutputValueClass(IntWritable.class);
 
-        FileInputFormat.addInputPath(job2, new Path(args[1]));
-        FileOutputFormat.setOutputPath(job2, new Path(args[2]));
+        FileInputFormat.addInputPath(job2, new Path(args[1] + "intermediate"));
+        FileOutputFormat.setOutputPath(job2, new Path(args[1]));
 
        if (!job2.waitForCompletion(true)) {
   System.exit(1);
