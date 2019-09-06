@@ -20,7 +20,7 @@ import java.io.IOException;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 
-public class Task2compiled{
+public class Task2{
 
 public static class BMapper1
        extends Mapper<Object, Text, Text, IntArrayWritable>{
@@ -36,10 +36,17 @@ public static class BMapper1
 		    int[] balls = new int[2];
         if(values[9].length() != 2)
         {
-          balls[0] = 1;
-          balls[1] = 1;
-          IntArrayWritable ball_data = new IntArrayWritable(balls);
-          context.write(new Text(values[4] + "," + values[6]), ball_data);
+          if(values[9].length() == 7 || values[9].length()==12)
+          {
+            // System.out.println("Not correct");
+          }
+          else
+          {
+            balls[0] = 1;
+            balls[1] = 1;
+            IntArrayWritable ball_data = new IntArrayWritable(balls);
+            context.write(new Text(values[4] + "," + values[6]), ball_data);
+          }
         }
         else
         {
@@ -264,9 +271,8 @@ org.apache.hadoop.mapreduce.Mapper<Object, Text, MyWritableComparable, IntWritab
     org.apache.hadoop.mapreduce.Reducer<MyWritableComparable, IntWritable, Text, Text>.Context context) throws IOException, InterruptedException{
 
 
-      //context.write(new Text(key.getKey1() + "," + key.getKey4() + "," +  key.getKey2().toString() + "," +key.getKey3().toString()),new Text(""));
-      context.write(new Text(key.getKey1().toString().replaceAll("\\s","") + "," + key.getKey4().toString().replaceAll("\\s","")  + "," + key.getKey2().toString()+","+ key.getKey3().toString()), new Text(""));
-        
+      context.write(new Text(key.getKey1() + "," + key.getKey4() + "," +  key.getKey2().toString() + "," +key.getKey3().toString()),new Text(""));
+              
             }
           }
 
@@ -276,7 +282,7 @@ org.apache.hadoop.mapreduce.Mapper<Object, Text, MyWritableComparable, IntWritab
   public static void main(String[] args) throws Exception {
     Configuration conf = new Configuration();
     Job job1 = Job.getInstance(conf, "bd task2");
-    job1.setJarByClass(Task2compiled.class);
+    job1.setJarByClass(Task2.class);
     job1.setMapperClass(BMapper1.class);
 //    job1.setCombinerClass(BReducer.class);
     job1.setReducerClass(BReducer1.class);
@@ -285,7 +291,7 @@ org.apache.hadoop.mapreduce.Mapper<Object, Text, MyWritableComparable, IntWritab
     job1.setMapOutputValueClass(IntArrayWritable.class);
 
     FileInputFormat.addInputPath(job1, new Path(args[0]));
-    FileOutputFormat.setOutputPath(job1, new Path(args[1]));
+    FileOutputFormat.setOutputPath(job1, new Path(args[1] + "intermediate"));
     if (!job1.waitForCompletion(true)) {
   System.exit(1);
 }
@@ -293,7 +299,7 @@ org.apache.hadoop.mapreduce.Mapper<Object, Text, MyWritableComparable, IntWritab
 	Job job2 = Job.getInstance(conf, "bd task2 sd");
 
 
-job2.setJarByClass(Task2compiled.class);
+job2.setJarByClass(Task2.class);
         job2.setMapperClass(BMapper2.class);
         // job.setCombinerClass(BReducer.class);
         job2.setReducerClass(BReducer2.class);
@@ -302,8 +308,8 @@ job2.setJarByClass(Task2compiled.class);
         job2.setMapOutputKeyClass(MyWritableComparable.class);
 	job2.setMapOutputValueClass(IntWritable.class);
 
-        FileInputFormat.addInputPath(job2, new Path(args[1]));
-        FileOutputFormat.setOutputPath(job2, new Path(args[2]));
+  FileInputFormat.addInputPath(job2, new Path(args[1] + "intermediate"));
+  FileOutputFormat.setOutputPath(job2, new Path(args[1]));
 
        if (!job2.waitForCompletion(true)) {
   System.exit(1);
