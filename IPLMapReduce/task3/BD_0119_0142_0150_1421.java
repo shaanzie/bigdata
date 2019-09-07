@@ -20,7 +20,7 @@ import java.io.IOException;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 
-public class Task3{
+public class BD_0119_0142_0150_1421{
 
 public static class BMapper1
        extends Mapper<Object, Text, Text, IntArrayWritable>{
@@ -273,7 +273,7 @@ org.apache.hadoop.mapreduce.Mapper<Object, Text, MyWritableComparable, IntWritab
   public static void main(String[] args) throws Exception {
     Configuration conf = new Configuration();
     Job job1 = Job.getInstance(conf, "bd task3");
-    job1.setJarByClass(Task3.class);
+    job1.setJarByClass(BD_0119_0142_0150_1421.class);
     job1.setMapperClass(BMapper1.class);
 //    job1.setCombinerClass(BReducer.class);
     job1.setReducerClass(BReducer1.class);
@@ -290,7 +290,7 @@ org.apache.hadoop.mapreduce.Mapper<Object, Text, MyWritableComparable, IntWritab
 	Job job2 = Job.getInstance(conf, "bd task3 sd");
 
 
-job2.setJarByClass(Task3.class);
+job2.setJarByClass(BD_0119_0142_0150_1421.class);
         job2.setMapperClass(BMapper2.class);
         // job.setCombinerClass(BReducer.class);
         job2.setReducerClass(BReducer2.class);
