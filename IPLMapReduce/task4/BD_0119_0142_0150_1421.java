@@ -5,6 +5,7 @@ import java.util.*;
 import java.io.DataOutput;
 import java.io.DataInput;
 
+
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -19,6 +20,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
+import org.apache.hadoop.io.NullWritable;
 
 public class BD_0119_0142_0150_1421 {
     public static int stringCompare(String str1, String str2) {
@@ -131,6 +133,7 @@ public class BD_0119_0142_0150_1421 {
                 throws IOException, InterruptedException {
             String line = Value.toString();
             String[] values = line.split(",");
+		String venV = "";
             if (values[1].equals("venue")) {
 
                 if (val.size() == 0) {
@@ -138,7 +141,9 @@ public class BD_0119_0142_0150_1421 {
                     val.add("na");
                 }
                 if (!val.get(0).equals(values[2])) {
-
+			if(values[2].contains("\"")){
+				values[2] = values[2] + "," + values[3];			
+				}
                     val.set(0, values[2]);
                 }
             }
@@ -150,10 +155,10 @@ public class BD_0119_0142_0150_1421 {
         }
     }
 
-    public static class BReducer extends Reducer<MyWritableComparable, Text, Text, Text> {
+    public static class BReducer extends Reducer<MyWritableComparable, Text, Text, NullWritable> {
 
         public void reduce(MyWritableComparable key, Iterable<Text> values,
-                org.apache.hadoop.mapreduce.Reducer<MyWritableComparable, Text, Text, Text>.Context context)
+                org.apache.hadoop.mapreduce.Reducer<MyWritableComparable, Text, Text, NullWritable>.Context context)
                 throws IOException, InterruptedException {
 
           String currentBat = "";
@@ -179,7 +184,7 @@ public class BD_0119_0142_0150_1421 {
 				sr = 0;
 			}
 			else sr = (double)currentRuns / currentBalls;
-			if(sr >= max && currentBalls >10){
+			if(sr >= max && currentBalls >=10){
 				max = sr;
 				maxBat = currentBat;	
 			}
@@ -192,12 +197,14 @@ public class BD_0119_0142_0150_1421 {
 	}
 	//last batsman, currentBat, runs, balls
 	sr = (double) currentRuns/currentBalls;
-	if(sr >= max){
+	if(sr >= max && currentBalls >= 10){
 		max = sr;
 		maxBat = currentBat;
 	}
-
-	context.write(new Text(key.getKey1()), new Text(maxBat));
+	
+	String key1 = key.getKey1();
+	
+	context.write(new Text(key1 + "," + maxBat), NullWritable.get());
 
 	
 }
@@ -245,10 +252,11 @@ public class BD_0119_0142_0150_1421 {
         job.setMapOutputValueClass(Text.class);
 
         job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(Text.class);
+        job.setOutputValueClass(NullWritable.class);
 
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
+
         System.exit(job.waitForCompletion(true) ? 0 : 1);
     }
 

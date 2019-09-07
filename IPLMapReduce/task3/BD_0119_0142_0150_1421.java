@@ -13,7 +13,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-
+import org.apache.hadoop.io.NullWritable;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -256,13 +256,13 @@ org.apache.hadoop.mapreduce.Mapper<Object, Text, MyWritableComparable, IntWritab
       }
 
       public static class BReducer2
-          extends Reducer<MyWritableComparable, IntWritable, Text, Text>{
+          extends Reducer<MyWritableComparable, IntWritable, Text, NullWritable>{
 
             public void reduce(MyWritableComparable key, Iterable<IntWritable> vals,
-    org.apache.hadoop.mapreduce.Reducer<MyWritableComparable, IntWritable, Text, Text>.Context context) throws IOException, InterruptedException{
+    org.apache.hadoop.mapreduce.Reducer<MyWritableComparable, IntWritable, Text, NullWritable>.Context context) throws IOException, InterruptedException{
 
 
-		context.write(new Text(key.getKey1() + ", " + key.getKey4()), new Text("balls: " + key.getKey3().toString() + " ," +  "runs: " + key.getKey2().toString()));
+		context.write(new Text(key.getKey1().trim() + "," + key.getKey4().trim() + "," + key.getKey2().toString() + "," + key.getKey3().toString()), NullWritable.get());
 
             }
           }
@@ -282,7 +282,7 @@ org.apache.hadoop.mapreduce.Mapper<Object, Text, MyWritableComparable, IntWritab
     job1.setMapOutputValueClass(IntArrayWritable.class);
 
     FileInputFormat.addInputPath(job1, new Path(args[0]));
-    FileOutputFormat.setOutputPath(job1, new Path(args[1]));
+    FileOutputFormat.setOutputPath(job1, new Path(args[1] + "intermediate"));
     if (!job1.waitForCompletion(true)) {
   System.exit(1);
 }
@@ -295,12 +295,12 @@ job2.setJarByClass(BD_0119_0142_0150_1421.class);
         // job.setCombinerClass(BReducer.class);
         job2.setReducerClass(BReducer2.class);
 
-        job2.setOutputValueClass(Text.class);
+        job2.setOutputValueClass(NullWritable.class);
         job2.setMapOutputKeyClass(MyWritableComparable.class);
 	job2.setMapOutputValueClass(IntWritable.class);
 
-        FileInputFormat.addInputPath(job2, new Path(args[1]));
-        FileOutputFormat.setOutputPath(job2, new Path(args[2]));
+        FileInputFormat.addInputPath(job2, new Path(args[1] + "intermediate"));
+        FileOutputFormat.setOutputPath(job2, new Path(args[1]));
 
        if (!job2.waitForCompletion(true)) {
   System.exit(1);
