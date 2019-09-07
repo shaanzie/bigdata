@@ -22,7 +22,7 @@ import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.io.NullWritable;
 
-public class Task4 {
+public class BD_0119_0142_0150_1421 {
     public static int stringCompare(String str1, String str2) {
         // from geeksforgeeks
         int l1 = str1.length();
@@ -242,7 +242,7 @@ public class Task4 {
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
         Job job = Job.getInstance(conf, "task 4");
-        job.setJarByClass(Task4.class);
+        job.setJarByClass(BD_0119_0142_0150_1421.class);
         job.setMapperClass(BMapper.class);
         // job.setCombinerClass(IntSumReducer.class);
        // job.setPartitionerClass(NaturalKeyPart.class);

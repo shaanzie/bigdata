@@ -22,49 +22,32 @@ import java.io.IOException;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 
-public class Task2Local{
+public class BD_0119_0142_0150_1421{
 
-    static int counter = 0;
-    public static final Comparator<String> Wickets = new Comparator<String>(){
+ public static int stringCompare(String str1, String str2)
+        {
     
-        @Override
-        public int compare(String o1, String o2) {
-            // TODO Auto-generated method stub
-            String[] arr1 = o1.split(",");
-            String[] arr2 = o2.split(",");
-            System.out.println(arr1[0] + ": " + arr1[2]);
-            if(Integer.parseInt(arr1[2]) > Integer.parseInt(arr2[2]))
-                return 1;
-            else if(Integer.parseInt(arr1[2]) == Integer.parseInt(arr2[2]))
-            {
-                if(Integer.parseInt(arr1[3]) < Integer.parseInt(arr2[3]))
-                {
-                    return 1;
-                }
-                else if(Integer.parseInt(arr1[3]) == Integer.parseInt(arr2[3]))
-                {
-                    if(o1.compareTo(o2) < 0)
-                    {   
-                        return 1;
-                    }
-                    else if(o1.compareTo(o2) > 0)
-                    {
-                        // System.out.println(counter++);
-                        return -1;
-                    }
-                    else
-                    {
-                        return 0;
-                    }
-                }
-                else
-                {
-                    return -1;
-                }
-            }
-            return 0;
-        }
-    };
+          int l1 = str1.length();
+          int l2 = str2.length();
+          int lmin = Math.min(l1, l2);
+
+          for (int i = 0; i < lmin; i++) {
+              int str1_ch = (int)str1.charAt(i);
+              int str2_ch = (int)str2.charAt(i);
+
+              if (str1_ch != str2_ch) {
+                  return str1_ch - str2_ch;
+              }
+          }
+
+          if (l1 != l2) {
+              return l1 - l2;
+          }
+
+          else {
+              return 0;
+          }
+      }
 
     public static int count = 0;
 
@@ -84,9 +67,13 @@ public class Task2Local{
                 int[] balls = new int[2];
                 if(values[9].length() != 2)
                 {
-                    if(values[9].length() == 7 || values[9].length()==12)
+                    if(values[9].equalsIgnoreCase("run out") || values[9].equalsIgnoreCase("retired hurt"))
                     {
                         // System.out.println("Not correct");
+                        balls[0] = 1;
+                        balls[1] = 0;
+                        IntArrayWritable ball_data = new IntArrayWritable(balls);
+                        context.write(new Text(values[4] + "," + values[6]), ball_data);
                     }
                     else
                     {
@@ -111,7 +98,7 @@ public static class BReducer
   extends Reducer<Text, IntArrayWritable, Text, Text> {
 
     
-
+    private ArrayList<String> keysofar = new ArrayList<String>();
     private Text result = new Text();
     private int count = 0;
     
@@ -132,27 +119,53 @@ public static class BReducer
 
         if(totalBalls > 5){
             result.set(new Text(key + "," + Integer.toString(wickets) + "," + Integer.toString(totalBalls)));
-            // context.write(key, result);
-            // String[] res = result.toString().split(",");
-            resultList.add(result.toString());
+            
+     	    keysofar.add(key + ","+ Integer.toString(wickets) + "," + Integer.toString(totalBalls));
             count++;
-            if(count == 9287)
-            {
-                resultList.sort(null);
-                for(int i = 0; i<resultList.size(); i++)
-                {
-                    String intermediate = resultList.get(i).toString();
-                    System.out.println(intermediate);
-
+            System.out.println(count);
+        }
+            if(count >= 9358){	
+                Collections.sort(keysofar, new Comparator<String>(){
+                    
+                    @Override
+                    public int compare(String a, String b){
+                    int wicksA = Integer.parseInt(a.split(",")[2]);
+                    int wicksB = Integer.parseInt(b.split(",")[2]);
+        
+                    int ballsA = Integer.parseInt(a.split(",")[3]);
+                    int ballsB = Integer.parseInt(b.split(",")[3]);
+                    
+                    String bowlerA = a.split(",")[0];
+                    String bowlerB = b.split(",")[0];
+                    
+                    if(wicksA > wicksB){
+                        return -1;			
+                    }
+                    else if(wicksA == wicksB){
+                        if(ballsA < ballsB) return -1;
+                        else if(ballsA == ballsB){
+                                int x = stringCompare(bowlerA, bowlerB);
+                                if(x == 0) return 0;
+                                else if(x > 0) return 1;
+                                else return -1;					
+                            }
+                        else return 1;
+                    }
+                    return 1;
+        }
+                     
+                });
+                for(String v: keysofar){
+                    context.write(new Text(v), new Text(""));		
                 }
             }
+
 
         // System.out.println(resultList);
             }
 
         }
 
-    }
 
     static class IntArrayWritable extends ArrayWritable {
 
@@ -174,7 +187,7 @@ public static class BReducer
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
         Job job1 = Job.getInstance(conf, "bd task2");
-        job1.setJarByClass(Task2Local.class);
+        job1.setJarByClass(BD_0119_0142_0150_1421.class);
         job1.setMapperClass(BMapper.class);
     //    job1.setCombinerClass(BReducer.class);
         job1.setReducerClass(BReducer.class);
