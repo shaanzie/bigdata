@@ -5,6 +5,7 @@ import java.util.*;
 import java.io.DataOutput;
 import java.io.DataInput;
 
+
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -132,17 +133,17 @@ public class BD_0119_0142_0150_1421 {
                 throws IOException, InterruptedException {
             String line = Value.toString();
             String[] values = line.split(",");
+		String venV = "";
             if (values[1].equals("venue")) {
 
                 if (val.size() == 0) {
                     val.add("na");
                 }
                 if (!val.get(0).equals(values[2])) {
-                    
-					if (values[2].charAt(0) == '"')
-						val.set(0, values[2].trim() + ", " + values[3].trim());
-					else
-						val.set(0, values[2]);
+			if(values[2].contains("\"")){
+				values[2] = values[2] + "," + values[3];			
+				}
+                    val.set(0, values[2]);
                 }
             }
             if (values[0].equals("ball") && Integer.parseInt(values[8]) == 0) {
@@ -199,6 +200,9 @@ public class BD_0119_0142_0150_1421 {
 					maxBat = currentBat;
 					maxRuns = currentRuns;
 				}			
+			if(sr >= max && currentBalls >=10){
+				max = sr;
+				maxBat = currentBat;	
 			}
 			
 			sr = 0.0;
@@ -209,24 +213,15 @@ public class BD_0119_0142_0150_1421 {
 
 	}
 	//last batsman, currentBat, runs, balls
-	sr = (double) currentRuns / currentBalls;
-	if(sr >= maxsr && currentBalls >= 10){
-		if (sr == maxsr) {
-			if (currentRuns > maxRuns) {
-				maxsr = sr;
-				maxBat = currentBat;
-				maxRuns = currentRuns;						
-			}					
-		}
-		else {				
-			maxsr = sr;
-			maxBat = currentBat;
-			maxRuns = currentRuns;
-		}
+	sr = (double) currentRuns/currentBalls;
+	if(sr >= max && currentBalls >= 10){
+		max = sr;
+		maxBat = currentBat;
 	}
-
-	context.write(new Text(key.getKey1() + "," + maxBat), NullWritable.get());
-
+	
+	String key1 = key.getKey1();
+	
+	context.write(new Text(key1 + "," + maxBat), NullWritable.get());
 
 }
 
@@ -277,8 +272,10 @@ public class BD_0119_0142_0150_1421 {
 
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
+
         System.exit(job.waitForCompletion(true) ? 0 : 1);
     }
 
+}
 }
 
