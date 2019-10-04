@@ -19,10 +19,11 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
+import org.apache.hadoop.io.NullWritable;
 
 public class BD_0119_0142_0150_1421 {
     public static int stringCompare(String str1, String str2) {
-        // from geeksforgeeks
+        
         int l1 = str1.length();
         int l2 = str2.length();
         int lmin = Math.min(l1, l2);
@@ -114,7 +115,7 @@ public class BD_0119_0142_0150_1421 {
                      if(y > 0) return 1;
                      else if(y == 0) return 0;
                      return -1;
-                    
+
                 }
                 return -1;
             }
@@ -134,12 +135,14 @@ public class BD_0119_0142_0150_1421 {
             if (values[1].equals("venue")) {
 
                 if (val.size() == 0) {
-
                     val.add("na");
                 }
                 if (!val.get(0).equals(values[2])) {
-
-                    val.set(0, values[2]);
+                    
+					if (values[2].charAt(0) == '"')
+						val.set(0, values[2].trim() + ", " + values[3].trim());
+					else
+						val.set(0, values[2]);
                 }
             }
             if (values[0].equals("ball") && Integer.parseInt(values[8]) == 0) {
@@ -150,20 +153,22 @@ public class BD_0119_0142_0150_1421 {
         }
     }
 
-    public static class BReducer extends Reducer<MyWritableComparable, Text, Text, Text> {
+    public static class BReducer extends Reducer<MyWritableComparable, Text, Text, NullWritable> {
 
         public void reduce(MyWritableComparable key, Iterable<Text> values,
-                org.apache.hadoop.mapreduce.Reducer<MyWritableComparable, Text, Text, Text>.Context context)
+                org.apache.hadoop.mapreduce.Reducer<MyWritableComparable, Text, Text, NullWritable>.Context context)
                 throws IOException, InterruptedException {
 
-          String currentBat = "";
-	  String maxBat = "";
+    String currentBat = "";
+	String maxBat = "";
 
-	  int currentBalls = 0;
-		int currentRuns = 0;
-		
-	double max = 0.0;
+	int currentBalls = 0;
+	int currentRuns = 0;
+
+	double maxsr = 0.0;
 	double sr = 0.0;
+
+	int maxRuns = 0;
 
 	for(Text val: values){
 		String[] records = val.toString().split(",");
@@ -173,17 +178,30 @@ public class BD_0119_0142_0150_1421 {
 		if(currentBat.equals(records[0])){
 			currentBalls += 1;
 			currentRuns += Integer.parseInt(records[1]);
-		}	
+		}
 		else{
 			if(currentBalls == 0){
 				sr = 0;
 			}
 			else sr = (double)currentRuns / currentBalls;
-			if(sr >= max && currentBalls >10){
-				max = sr;
-				maxBat = currentBat;	
+			
+			if(sr >= maxsr && currentBalls >= 10){
+				
+				if (sr == maxsr) {
+					if (currentRuns > maxRuns) {
+						maxsr = sr;
+						maxBat = currentBat;
+						maxRuns = currentRuns;						
+					}					
+				}
+				else {				
+					maxsr = sr;
+					maxBat = currentBat;
+					maxRuns = currentRuns;
+				}			
 			}
-			sr = 0;
+			
+			sr = 0.0;
 			currentBalls = 1;
 			currentRuns = Integer.parseInt(records[1]);
 			currentBat = records[0];
@@ -191,17 +209,27 @@ public class BD_0119_0142_0150_1421 {
 
 	}
 	//last batsman, currentBat, runs, balls
-	sr = (double) currentRuns/currentBalls;
-	if(sr >= max){
-		max = sr;
-		maxBat = currentBat;
+	sr = (double) currentRuns / currentBalls;
+	if(sr >= maxsr && currentBalls >= 10){
+		if (sr == maxsr) {
+			if (currentRuns > maxRuns) {
+				maxsr = sr;
+				maxBat = currentBat;
+				maxRuns = currentRuns;						
+			}					
+		}
+		else {				
+			maxsr = sr;
+			maxBat = currentBat;
+			maxRuns = currentRuns;
+		}
 	}
 
-	context.write(new Text(key.getKey1()), new Text(maxBat));
+	context.write(new Text(key.getKey1() + "," + maxBat), NullWritable.get());
 
-	
+
 }
-	
+
     }
 
 
@@ -245,7 +273,7 @@ public class BD_0119_0142_0150_1421 {
         job.setMapOutputValueClass(Text.class);
 
         job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(Text.class);
+        job.setOutputValueClass(NullWritable.class);
 
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
@@ -253,3 +281,4 @@ public class BD_0119_0142_0150_1421 {
     }
 
 }
+

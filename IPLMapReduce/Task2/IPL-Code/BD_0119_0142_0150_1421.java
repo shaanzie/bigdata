@@ -26,7 +26,7 @@ public class BD_0119_0142_0150_1421{
 
  public static int stringCompare(String str1, String str2)
         {
-    
+          //from geeksforgeeks
           int l1 = str1.length();
           int l2 = str2.length();
           int lmin = Math.min(l1, l2);
@@ -122,9 +122,11 @@ public static class BReducer
             
      	    keysofar.add(key + ","+ Integer.toString(wickets) + "," + Integer.toString(totalBalls));
             count++;
-            System.out.println(count);
+            // System.out.println(count);
         }
-            if(count >= 9358){	
+        // System.out.println(count);
+            if(count == 9358){
+                count++;	
                 Collections.sort(keysofar, new Comparator<String>(){
                     
                     @Override
@@ -158,7 +160,9 @@ public static class BReducer
                 for(String v: keysofar){
                     context.write(new Text(v), new Text(""));		
                 }
+                
             }
+            
 
 
         // System.out.println(resultList);
