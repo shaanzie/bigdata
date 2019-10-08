@@ -24,13 +24,9 @@ def parseAvg(urls):
     return parts[0], float(int(parts[2]))/float(int(parts[3])) 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: pagerank <file> and optional <iterations>", file=sys.stderr)
+    if len(sys.argv) < 4:
+        print("Usage: pagerank <file> <iterations> <rank update rule>", file=sys.stderr)
         sys.exit(-1)
-
-    print("WARN: This is a naive implementation of PageRank and is given as an example!\n" +
-          "Please refer to PageRank implementation provided by graphx",
-          file=sys.stderr)
 
     spark = SparkSession\
         .builder\
@@ -58,7 +54,7 @@ if __name__ == "__main__":
                 lambda url_urls_rank: computeContribs(url_urls_rank[1][0], url_urls_rank[1][1]))
 
             # Re-calculates URL ranks based on neighbor contributions.
-            ranks = contribs.reduceByKey(add).mapValues(lambda rank: rank * 0.80 + 0.20)
+            ranks = contribs.reduceByKey(add).mapValues(lambda rank: rank * (sys.argv[3])/100.0 + 1-(sys.argv[3])/100.0)
 
     else:
         while(True):
