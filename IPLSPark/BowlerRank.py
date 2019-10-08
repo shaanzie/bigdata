@@ -60,8 +60,8 @@ if __name__ == "__main__":
             contribs = links.join(ranks)\
                             .flatMap(lambda item: computeContribs(item[1][0], item[1][1]))
             
-            ranks = contribs.reduceByKey(add).mapValues(lambda rank: rank * 0.80 + 0.20)
-            
+            ranks = contribs.reduceByKey(add).mapValues(lambda rank: rank * (sys.argv[3])/100.0 + 1-(sys.argv[3])/100.0)
+
             curr_lambda = ranks.max()[1]
 
             if abs(prev_lambda - curr_lambda) < 0.00001:
