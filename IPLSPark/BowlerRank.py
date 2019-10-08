@@ -76,6 +76,6 @@ if __name__ == "__main__":
 					.map(lambda x:(x[1],x[0]))
 
     for (link, rank) in ranks.collect():
-        print("%s has rank: %s." % (link, rank))
+        print("%s,%s" % (link, rank))
 
     spark.stop()
