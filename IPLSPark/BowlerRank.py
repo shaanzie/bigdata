@@ -8,14 +8,12 @@ from pyspark.sql import SparkSession
 
 
 def computeContribs(urls, rank):
-    """Calculates URL contributions to the rank of other URLs."""
     num_urls = len(urls)
     for url in urls:
         yield (url, rank / num_urls)
 
 
 def parseNeighbors(urls):
-    """Parses a urls pair string into urls pair."""
     parts = re.split(',', urls)
     return parts[0], parts[1]
 
@@ -30,7 +28,7 @@ if __name__ == "__main__":
 
     spark = SparkSession\
         .builder\
-        .appName("PythonPageRank")\
+        .appName("Task 1")\
         .getOrCreate()
 
     lines = spark.read.text(sys.argv[1]).rdd.map(lambda r: r[0])
@@ -46,24 +44,26 @@ if __name__ == "__main__":
     curr_lambda = ranks.max()[1]
     itr = 0
 
-    # Calculates and updates URL ranks continuously using PageRank algorithm.
     if int(sys.argv[2]) != 0:
+
         for iteration in range(int(sys.argv[2])):
-            # Calculates URL contributions to the rank of other URLs.
+
             contribs = links.join(ranks).flatMap(
                 lambda url_urls_rank: computeContribs(url_urls_rank[1][0], url_urls_rank[1][1]))
 
-            # Re-calculates URL ranks based on neighbor contributions.
             ranks = contribs.reduceByKey(add).mapValues(lambda rank: rank * (sys.argv[3])/100.0 + 1-(sys.argv[3])/100.0)
 
     else:
         while(True):
             prev_lambda = curr_lambda
+
             contribs = links.join(ranks)\
                             .flatMap(lambda item: computeContribs(item[1][0], item[1][1]))
             
             ranks = contribs.reduceByKey(add).mapValues(lambda rank: rank * 0.80 + 0.20)
+            
             curr_lambda = ranks.max()[1]
+
             if abs(prev_lambda - curr_lambda) < 0.00001:
                 print(prev_lambda, curr_lambda)
                 break
