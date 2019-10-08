@@ -47,7 +47,7 @@ if __name__ == "__main__":
     itr = 0
 
     # Calculates and updates URL ranks continuously using PageRank algorithm.
-    if sys.argv[2] != 0:
+    if int(sys.argv[2]) != 0:
         for iteration in range(int(sys.argv[2])):
             # Calculates URL contributions to the rank of other URLs.
             contribs = links.join(ranks).flatMap(
