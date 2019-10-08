@@ -19,10 +19,9 @@ def parseNeighbors(urls):
     parts = re.split(',', urls)
     return parts[0], parts[1]
 
-def parseBowls(urls):
+def parseAvg(urls):
     parts = re.split(',', urls)
-    return float(parts[2])/float(parts[3]), parts[3]
-
+    return parts[0], float(int(parts[2]))/float(int(parts[3])) 
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -33,33 +32,23 @@ if __name__ == "__main__":
           "Please refer to PageRank implementation provided by graphx",
           file=sys.stderr)
 
-    # Initialize the spark context.
     spark = SparkSession\
         .builder\
         .appName("PythonPageRank")\
         .getOrCreate()
 
-    # Loads in input file. It should be in format of:
-    #     URL         neighbor URL
-    #     URL         neighbor URL
-    #     URL         neighbor URL
-    #     ...
     lines = spark.read.text(sys.argv[1]).rdd.map(lambda r: r[0])
 
-    # Loads all URLs from input file and initialize their neighbors.
     links = lines.map(lambda urls: parseNeighbors(urls)).distinct().groupByKey().cache()
 
-    avgs = lines.map(lambda urls: parseBowls(urls)).distinct().groupByKey().cache()
+    ranks = lines.map(lambda string: parseAvg(string))\
+					.reduceByKey(add)\
+					.mapValues(lambda x: 1.0 if x < 1 else x)\
+					.cache()
 
-    for (link, rank) in avgs.collect():
-        print("%s IS OF: %s." % (link, rank))
-    # Loads all URLs with other URL(s) link to from input file and initialize ranks of them to one.
-    
-    ranks = links.map(lambda url_neighbors: (url_neighbors[0], avgs.collect()[url_neighbors[0]][0]))
-
-    prev_lambda_list = [1]
     prev_lambda = 0
-    iter = 0
+    curr_lambda = ranks.max()[1]
+    itr = 0
 
     # Calculates and updates URL ranks continuously using PageRank algorithm.
     if len(sys.argv) == 3:
@@ -69,21 +58,27 @@ if __name__ == "__main__":
                 lambda url_urls_rank: computeContribs(url_urls_rank[1][0], url_urls_rank[1][1]))
 
             # Re-calculates URL ranks based on neighbor contributions.
-            ranks = contribs.reduceByKey(add).mapValues(lambda rank: rank * 0.85 + 0.15)
+            ranks = contribs.reduceByKey(add).mapValues(lambda rank: rank * 0.80 + 0.20)
 
     else:
         while(True):
-            prev_lambda = min(prev_lambda_list)
-            contribs = links.join(ranks).flatMap(
-                lambda url_urls_rank: computeContribs(url_urls_rank[1][0], url_urls_rank[1][1]))
-            prev_lambda_list.append(contribs.collect()[1][1])
-            ranks = contribs.reduceByKey(add).mapValues(lambda rank: rank * 0.85 + 0.15)
-            new_lambda = min(prev_lambda_list)
-            if(prev_lambda - new_lambda < 0.00001):
-                print(new_lambda, prev_lambda)
+            prev_lambda = curr_lambda
+            contribs = links.join(ranks)\
+                            .flatMap(lambda item: computeContribs(item[1][0], item[1][1]))
+            
+            ranks = contribs.reduceByKey(add).mapValues(lambda rank: rank * 0.80 + 0.20)
+            curr_lambda = ranks.max()[1]
+            if abs(prev_lambda - curr_lambda) < 0.00001:
+                print(prev_lambda, curr_lambda)
                 break
-            iter+=1
-    # Collects all URL ranks and dump them to console.
+
+            itr += 1
+
+
+    ranks = ranks.map(lambda x:(x[1],x[0]))\
+					.sortByKey(False)\
+					.map(lambda x:(x[1],x[0]))
+
     for (link, rank) in ranks.collect():
         print("%s has rank: %s." % (link, rank))
 
