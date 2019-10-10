@@ -43,6 +43,7 @@ if __name__ == "__main__":
     prev_lambda = 0
     curr_lambda = ranks.max()[1]
     itr = 0
+
     weight = int(sys.argv[3])
     weight = weight/100.0
 
@@ -56,21 +57,22 @@ if __name__ == "__main__":
             ranks = contribs.reduceByKey(add).mapValues(lambda rank: rank * weight + (1-weight))
 
     else:
-        iterations = 0
-        t1 = 1
-        t2 = 0
-        while(abs(t1 - t2) > 0.00001):
-          iterations+=1
-          contribs = links.join(ranks).flatMap(
-              lambda url_urls_rank: computeContribs(url_urls_rank[1][0], url_urls_rank[1][1]))
-          prev_ranks = ranks
-          ranks = contribs.reduceByKey(add).mapValues(lambda rank: rank * weight + (1-weight))
-       	  prev_ranks_new = list(prev_ranks.collect())
-          sorted_prev = sorted(prev_ranks_new, key = lambda x: x[0])
-       	  ranks_new = list(ranks.collect())
-          sorted_pres = sorted(ranks_new, key = lambda x: x[0])    
-          t1 = sorted_prev[0][1]
-          t2 = sorted_pres[0][1]
+        while(True):
+            prev_lambda = curr_lambda
+
+            contribs = links.join(ranks)\
+                            .flatMap(lambda item: computeContribs(item[1][0], item[1][1]))
+            
+            ranks = contribs.reduceByKey(add).mapValues(lambda rank: rank * weight + (1-weight))
+
+            curr_lambda = ranks.max()[1]
+
+            if abs(prev_lambda - curr_lambda) < 0.00001:
+                print(prev_lambda, curr_lambda)
+                break
+
+            itr += 1
+
 
     ranks = ranks.map(lambda x:(x[1],x[0]))\
 					.sortByKey(False)\
