@@ -24,7 +24,7 @@ import org.apache.hadoop.io.NullWritable;
 
 public class BD_0119_0142_0150_1421 {
     public static int stringCompare(String str1, String str2) {
-        
+
         int l1 = str1.length();
         int l2 = str2.length();
         int lmin = Math.min(l1, l2);
@@ -141,7 +141,7 @@ public class BD_0119_0142_0150_1421 {
                 }
                 if (!val.get(0).equals(values[2])) {
 			if(values[2].contains("\"")){
-				values[2] = values[2] + "," + values[3];			
+				values[2] = values[2] + "," + values[3];
 				}
                     val.set(0, values[2]);
                 }
@@ -185,26 +185,26 @@ public class BD_0119_0142_0150_1421 {
 				sr = 0;
 			}
 			else sr = (double)currentRuns / currentBalls;
-			
+
 			if(sr >= maxsr && currentBalls >= 10){
-				
+
 				if (sr == maxsr) {
 					if (currentRuns > maxRuns) {
 						maxsr = sr;
 						maxBat = currentBat;
-						maxRuns = currentRuns;						
-					}					
+						maxRuns = currentRuns;
+					}
 				}
-				else {				
+				else {
 					maxsr = sr;
 					maxBat = currentBat;
 					maxRuns = currentRuns;
-				}			
+				}
 			if(sr >= max && currentBalls >=10){
 				max = sr;
-				maxBat = currentBat;	
+				maxBat = currentBat;
 			}
-			
+
 			sr = 0.0;
 			currentBalls = 1;
 			currentRuns = Integer.parseInt(records[1]);
@@ -218,9 +218,9 @@ public class BD_0119_0142_0150_1421 {
 		max = sr;
 		maxBat = currentBat;
 	}
-	
+
 	String key1 = key.getKey1();
-	
+
 	context.write(new Text(key1 + "," + maxBat), NullWritable.get());
 
 }
@@ -278,4 +278,3 @@ public class BD_0119_0142_0150_1421 {
 
 }
 }
-
