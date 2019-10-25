@@ -78,5 +78,5 @@ if __name__ == "__main__":
 
     for (link, rank) in ranks.collect():
         print("%s,%s" % (link, rank))
-
+    print("Iterations: ", iterations)
     spark.stop()
