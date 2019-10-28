@@ -27,6 +27,14 @@ def process_rdd(time, rdd):
 def tmp(x):
 	return (x.split(';')[0],1)
 
+def takeAndPrint(rdd):
+	taken = rdd.take(4)
+	for record in taken[:3]:
+		print(record)
+	if len(taken) > 3:
+		print("...")
+	print("")
+
 conf=SparkConf()
 conf.setAppName("A2")
 sc=SparkContext(conf=conf)
@@ -44,7 +52,7 @@ sorted_ = totalcount.transform(lambda rdd: rdd.sortBy(lambda x: x[1], ascending 
 
 sorted_.pprint()
 # row_rdd = sorted_.map(lambda w: Row(tweetid=w[0], no_of_tweets=w[1]))
-# row_rdd = row_rdd.map(lambda w: print(w[0], w[1]))
+# row_rdd = sorted_.map(lambda w: takeAndPrint(w))
 
 ssc.start()
 ssc.awaitTermination(2)
