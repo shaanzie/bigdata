@@ -30,9 +30,7 @@ def tmp(x):
 def takeAndPrint(rdd):
 	taken = rdd.take(4)
 	for record in taken[:3]:
-		print(record)
-	if len(taken) > 3:
-		print("...")
+		print(record, end = ",")
 	print("")
 
 conf=SparkConf()
@@ -50,9 +48,9 @@ totalcount=tweet.updateStateByKey(aggregate_tweets_count)
 
 sorted_ = totalcount.transform(lambda rdd: rdd.sortBy(lambda x: x[1], ascending = False))
 
-sorted_.pprint()
+# sorted_.pprint()
 # row_rdd = sorted_.map(lambda w: Row(tweetid=w[0], no_of_tweets=w[1]))
-# row_rdd = sorted_.map(lambda w: takeAndPrint(w))
+sorted_.foreachRDD(takeAndPrint)
 
 ssc.start()
 ssc.awaitTermination(2)
