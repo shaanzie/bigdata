@@ -55,6 +55,7 @@ sorted_ = totalcount.transform(lambda rdd: rdd.sortBy(lambda x: x[1], ascending 
 # sorted_.pprint()
 # row_rdd = sorted_.map(lambda w: Row(tweetid=w[0], no_of_tweets=w[1]))
 sorted_.foreachRDD(takeAndPrint)
+print("")
 
 ssc.start()
 ssc.awaitTermination(2)
