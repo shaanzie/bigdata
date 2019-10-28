@@ -29,9 +29,13 @@ def tmp(x):
 
 def takeAndPrint(rdd):
 	taken = rdd.take(4)
+	i = 0
 	for record in taken[:3]:
-		print(record, end = ",")
-	print("")
+		if(i != 2):
+			print(record[0], end = ", ")
+		else:
+			print(record[0])
+		i+=1
 
 conf=SparkConf()
 conf.setAppName("A2")
