@@ -41,7 +41,7 @@ conf=SparkConf()
 conf.setAppName("A2")
 sc=SparkContext(conf=conf)
 
-ssc=StreamingContext(sc,2)
+ssc=StreamingContext(sc, sys.argv[1])
 ssc.checkpoint("/checkpoint_BIGDATA")
 
 dataStream=ssc.socketTextStream("localhost",9009)
@@ -58,5 +58,5 @@ sorted_.foreachRDD(takeAndPrint)
 print("")
 
 ssc.start()
-ssc.awaitTermination(2)
+ssc.awaitTermination(sys.argv[2])
 ssc.stop()
