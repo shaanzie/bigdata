@@ -12,12 +12,15 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+<<<<<<< HEAD
 import org.apache.hadoop.io.NullWritable;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
+=======
+>>>>>>> Assignment 1 base code
 
 public class BD_0119_0142_0150_1421{
 public static class SortByRuns implements Comparator<String>{
@@ -177,6 +180,7 @@ private int totalBalls;
         }
     }
 
+<<<<<<< HEAD
 
 
 
@@ -371,10 +375,28 @@ org.apache.hadoop.mapreduce.Mapper<Object, Text, MyWritableComparable, IntWritab
     FileOutputFormat.setOutputPath(job1, new Path(args[1] + "intermediate"));
     if (!job1.waitForCompletion(true)) {
   System.exit(1);
+=======
+  public static void main(String[] args) throws Exception {
+    Configuration conf = new Configuration();
+    Job job = Job.getInstance(conf, "bd task3");
+    job.setJarByClass(BD_0119_0142_0150_1421.class);
+    job.setMapperClass(BMapper.class);
+//    job.setCombinerClass(BReducer.class);
+    job.setReducerClass(BReducer.class);
+    job.setOutputKeyClass(Text.class);
+
+    job.setMapOutputValueClass(IntArrayWritable.class);
+
+    FileInputFormat.addInputPath(job, new Path(args[0]));
+    FileOutputFormat.setOutputPath(job, new Path(args[1]));
+    System.exit(job.waitForCompletion(true) ? 0 : 1);
+  }
+>>>>>>> Assignment 1 base code
 }
 
 //I think it's type, matchno, over, team batting, on strike batsman, non strike batsman, bowler, //runs, extras, how the batsman got out, who got out
 
+<<<<<<< HEAD
         job2.setOutputValueClass(NullWritable.class);
         job2.setMapOutputKeyClass(MyWritableComparable.class);
 	job2.setMapOutputValueClass(IntWritable.class);
@@ -388,3 +410,5 @@ org.apache.hadoop.mapreduce.Mapper<Object, Text, MyWritableComparable, IntWritab
   }
 
 }
+=======
+>>>>>>> Assignment 1 base code
