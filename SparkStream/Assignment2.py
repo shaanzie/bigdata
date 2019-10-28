@@ -35,23 +35,16 @@ ssc=StreamingContext(sc,2)
 ssc.checkpoint("/checkpoint_BIGDATA")
 
 dataStream=ssc.socketTextStream("localhost",9009)
-# dataStream.pprint()
-#tweet=dataStream.map(tmp)
-# OR
+
 tweet=dataStream.map(lambda w:(w.split(';')[7],1))
-#count=tweet.reduceByKey(lambda x,y:x+y)
-#count.pprint()
 
-#TO maintain state
 totalcount=tweet.updateStateByKey(aggregate_tweets_count)
-#totalcount.pprint()
 
-# totalcount = totalcount.sort()
 sorted_ = totalcount.transform(lambda rdd: rdd.sortBy(lambda x: x[1], ascending = False))
 
-#To Perform operation on each RDD
-# totalcount.foreachRDD(process_rdd)
-sorted_.pprint(3)
+sorted_.pprint()
+# row_rdd = sorted_.map(lambda w: Row(tweetid=w[0], no_of_tweets=w[1]))
+# row_rdd = row_rdd.map(lambda w: print(w[0], w[1]))
 
 ssc.start()
 ssc.awaitTermination(2)
