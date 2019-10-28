@@ -46,11 +46,12 @@ tweet=dataStream.map(lambda w:(w.split(';')[7],1))
 totalcount=tweet.updateStateByKey(aggregate_tweets_count)
 #totalcount.pprint()
 
-totalcount = totalcount.sort
+# totalcount = totalcount.sort()
+sorted_ = totalcount.transform(lambda rdd: rdd.sortBy(lambda x: x[1], ascending = False))
 
 #To Perform operation on each RDD
 # totalcount.foreachRDD(process_rdd)
-totalcount.pprint()
+sorted_.pprint(3)
 
 ssc.start()
 ssc.awaitTermination(2)
