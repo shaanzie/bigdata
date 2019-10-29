@@ -1,3 +1,4 @@
+
 import findspark
 findspark.init()
 
@@ -10,22 +11,6 @@ import requests
 def aggregate_tweets_count(new_values, total_sum):
 	return sum(new_values) + (total_sum or 0)
 
-def get_sql_context_instance(spark_context):
-	if ('sqlContextSingletonInstance' not in globals()):
-		globals()['sqlContextSingletonInstance'] = SQLContext(spark_context)
-	return globals()['sqlContextSingletonInstance']
-
-def process_rdd(time, rdd):
-		print("----------=========- %s -=========----------" % str(time))
-		try:
-			row_rdd = rdd.map(lambda w: Row(tweetid=w[0], no_of_tweets=w[1]))
-			row_rdd = row_rdd.map(lambda w: print(w[0], w[1]))
-		except:
-			e = sys.exc_info()[0]
-			print("Error: %s" % e)
-
-def tmp(x):
-	return (x.split(","))
 
 def takeAndPrint(rdd):
 	taken = rdd.take(4)
@@ -36,6 +21,16 @@ def takeAndPrint(rdd):
 		else:
 			print(record[0])
 		i+=1
+
+def cleanData(x):
+	hashtags = x.split(",")
+	clean = []
+	for hashtag in hashtags:
+		if hashtag == " " or hashtag == "  " or hashtag == "":
+		  	pass
+		else:
+		 	clean.append(hashtag)
+	return clean
 
 conf=SparkConf()
 conf.setAppName("A2")
@@ -49,22 +44,15 @@ ssc.checkpoint("/checkpoint_BIGDATA")
 
 dataStream=ssc.socketTextStream("localhost",9009)
 
-tweet=dataStream.map(lambda w:(w.split(';')[7], 1))
+tweet=dataStream.map(lambda w: w.split(';')[7])
+tweet1 = tweet.flatMap(lambda w: cleanData(w))
+tweet1 = tweet1.map(lambda x: (x, 1))
 
-totalcount = tweet.flatMap(lambda x: tmp(x))
 
-# totalcount = totalcount.map(lambda x: (x, 1))
-
-# totalcount.foreachRDD(takeAndPrint)
-
-totalcount = tweet.updateStateByKey(aggregate_tweets_count)
+totalcount = tweet1.updateStateByKey(aggregate_tweets_count)
 
 sorted_ = totalcount.transform(lambda rdd: rdd.sortBy(lambda x: x[1], ascending = False))
 
-
-
-# sorted_.pprint()
-# row_rdd = sorted_.map(lambda w: Row(tweetid=w[0], no_of_tweets=w[1]))
 sorted_.foreachRDD(takeAndPrint)
 
 
