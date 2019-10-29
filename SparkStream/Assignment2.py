@@ -32,17 +32,17 @@ def takeAndPrint(rdd):
 	i = 0
 	for record in taken[:3]:
 		if(i != 2):
-			print(record[0], end = ", ")
+			print(record[0], record[1])
 		else:
-			print(record[0])
+			print(record[0], record[1])
 		i+=1
 
 conf=SparkConf()
 conf.setAppName("A2")
 sc=SparkContext(conf=conf)
 
-c = int(sys.argv[1])
-t = int(sys.argv[2])
+c = float(sys.argv[1])
+t = float(sys.argv[2])
 
 ssc=StreamingContext(sc, c)
 ssc.checkpoint("/checkpoint_BIGDATA")
