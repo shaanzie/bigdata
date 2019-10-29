@@ -25,7 +25,7 @@ def process_rdd(time, rdd):
 			print("Error: %s" % e)
 
 def tmp(x):
-	return (x.split(';')[0],1)
+	return (x.split(","))
 
 def takeAndPrint(rdd):
 	taken = rdd.take(4)
@@ -49,11 +49,19 @@ ssc.checkpoint("/checkpoint_BIGDATA")
 
 dataStream=ssc.socketTextStream("localhost",9009)
 
-tweet=dataStream.map(lambda w:(w.split(';')[7],1))
+tweet=dataStream.map(lambda w:(w.split(';')[7], 1))
 
-totalcount=tweet.updateStateByKey(aggregate_tweets_count)
+totalcount = tweet.flatMap(lambda x: tmp(x))
+
+# totalcount = totalcount.map(lambda x: (x, 1))
+
+# totalcount.foreachRDD(takeAndPrint)
+
+totalcount = tweet.updateStateByKey(aggregate_tweets_count)
 
 sorted_ = totalcount.transform(lambda rdd: rdd.sortBy(lambda x: x[1], ascending = False))
+
+
 
 # sorted_.pprint()
 # row_rdd = sorted_.map(lambda w: Row(tweetid=w[0], no_of_tweets=w[1]))
