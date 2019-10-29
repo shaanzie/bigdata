@@ -41,7 +41,10 @@ conf=SparkConf()
 conf.setAppName("A2")
 sc=SparkContext(conf=conf)
 
-ssc=StreamingContext(sc, sys.argv[1])
+c = int(sys.argv[1])
+t = int(sys.argv[2])
+
+ssc=StreamingContext(sc, c)
 ssc.checkpoint("/checkpoint_BIGDATA")
 
 dataStream=ssc.socketTextStream("localhost",9009)
@@ -55,8 +58,8 @@ sorted_ = totalcount.transform(lambda rdd: rdd.sortBy(lambda x: x[1], ascending 
 # sorted_.pprint()
 # row_rdd = sorted_.map(lambda w: Row(tweetid=w[0], no_of_tweets=w[1]))
 sorted_.foreachRDD(takeAndPrint)
-print("")
+
 
 ssc.start()
-ssc.awaitTermination(sys.argv[2])
+ssc.awaitTermination(t)
 ssc.stop()
