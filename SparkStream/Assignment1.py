@@ -24,11 +24,8 @@ userSchema = StructType().add("1", "string") \
 		.add("c13", "string") \
 		.add("c14", "string")
 
-#maxfilestrigger not necessary.
-#monitors stream directory
 csvDF = spark \
     .readStream \
-#    .option("maxFilesPerTrigger", 1)
     .option("sep", ";") \
     .schema(userSchema) \
     .csv("hdfs://localhost:9000/stream/")
@@ -36,10 +33,12 @@ csvDF = spark \
 
 hashtags = csvDF.select("c8")
 words = hashtags.select(explode(split(hashtags.c8, ",")))
-words = words.withColumnRenamed("col", "hashtag")
-df1 = csvDF.select("11", "c13", "c14").withColumn("ratio", (csvDF.c13/ csvDF.c14))
+words = words.withColumnRenamed("col", "Hashtags")
 
 #if you dont specify a value for awaittermination, then this will run forever without giving a chance to the subsequent queries
-words.groupBy("hashtag").count().orderBy("count", ascending = False).writeStream.outputMode("complete").format("console").start().awaitTermination(20)
+word = words.groupBy("Hashtags").count().orderBy("count", ascending = False).limit(5).writeStream.outputMode("complete").format("console").start().awaitTermination(100)
 
-df1.groupBy("11").agg(F.max("ratio")).orderBy("max(ratio)", ascending = False).writeStream.outputMode("complete").format("console").start().awaitTermination(20)
+
+df1 = csvDF.select("11", "c13", "c14").withColumn("ratio", (csvDF.c13/ csvDF.c14))
+
+pop = df1.groupBy("11").agg(F.max("ratio")).orderBy("max(ratio)", ascending = False).withColumnRenamed("max(ratio)", "FRRatio").withColumnRenamed("11", "name").limit(1).writeStream.outputMode("complete").format("console").start().awaitTermination(20)
