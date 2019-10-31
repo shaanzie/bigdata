@@ -14,8 +14,9 @@ def aggregate_tweets_count(new_values, total_sum):
 
 def takeAndPrint(rdd):
 	taken = rdd.take(4)
+	taken = taken.transform(lambda rdd: rdd.sortBy(lambda x: x[0], ascending = False))
 	i = 0
-	for record in taken[:3]:
+	for record in taken[:5]:
 		if(i != 2):
 			print(record[0], end = ", ")
 		else:
