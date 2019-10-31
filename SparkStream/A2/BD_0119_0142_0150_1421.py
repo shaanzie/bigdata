@@ -14,7 +14,6 @@ def aggregate_tweets_count(new_values, total_sum):
 
 def takeAndPrint(rdd):
 	taken = rdd.take(5)
-	taken.sort()
 	i = 0
 	for record in taken[:5]:
 		if(i != 4):
@@ -54,7 +53,7 @@ tweet1 = tweet1.map(lambda x: (x, 1))
 
 totalcount = tweet1.updateStateByKey(aggregate_tweets_count)
 
-sorted_ = totalcount.transform(lambda rdd: rdd.sortBy(lambda x: x[1], ascending = False))
+sorted_ = totalcount.transform(lambda rdd: rdd.sortBy(lambda x: (x[1], x[0]), ascending = False))
 
 sorted_.foreachRDD(takeAndPrint)
 
