@@ -9,7 +9,7 @@ from pyspark.sql.functions import udf
 spark = SparkSession.builder.appName("Most popular user").getOrCreate()
 
 
-userSchema = StructType().add("1", "stream") \
+userSchema = StructType().add("1", "string") \
 		.add("2", "string") \
 		.add("3", "string") \
 		.add("4", "string") \
@@ -34,5 +34,10 @@ csvDF = spark \
 
 df1 = csvDF.select("11", "c13", "c14").withColumn("ratio", (csvDF.c13/ csvDF.c14))
 
-pop = df1.groupBy("11").agg(F.max("ratio")).orderBy("max(ratio)", ascending = False).withColumnRenamed("max(ratio)", "FRRatio").withColumnRenamed("11", "name").limit(1).writeStream.outputMode("complete").format("console").start().awaitTermination(60)
+pop = df1.groupBy("11").agg(F.max("ratio")).orderBy("max(ratio)", ascending = False).withColumnRenamed("max(ratio)", "FRRatio").withColumnRenamed("11", "name").limit(1)
+
+pop1 = pop.writeStream.outputMode("complete").format("console").start()
+
+pop1.awaitTermination(20)
+pop1.stop()
 spark.stop()

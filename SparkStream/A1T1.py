@@ -28,7 +28,7 @@ csvDF = spark \
     .readStream \
     .option("sep", ";") \
     .schema(userSchema) \
-    .csv("hdfs://localhost:9000/stream/")
+    .csv("hdfs://localhost:9000/A3/new/")
 
 
 hashtags = csvDF.select("c8")
@@ -36,5 +36,7 @@ words = hashtags.select(explode(split(hashtags.c8, ",")))
 words = words.withColumnRenamed("col", "Hashtags")
 
 
-word = words.groupBy("Hashtags").count().orderBy("count", ascending = False).limit(5).writeStream.outputMode("complete").format("console").start().awaitTermination(60)
+word = words.groupBy("Hashtags").count().orderBy("count", ascending = False).limit(5).writeStream.outputMode("complete").format("console").start()
+word.awaitTermination(30)
+word.stop()
 spark.stop()
