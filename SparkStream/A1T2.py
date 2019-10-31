@@ -9,7 +9,7 @@ from pyspark.sql.functions import udf
 spark = SparkSession.builder.appName("Most popular user").getOrCreate()
 
 
-userSchema = StructType().add("1", "stream") \
+userSchema = StructType().add("1", "string") \
 		.add("2", "string") \
 		.add("3", "string") \
 		.add("4", "string") \
@@ -28,7 +28,7 @@ csvDF = spark \
     .readStream \
     .option("sep", ";") \
     .schema(userSchema) \
-    .csv("hdfs://localhost:9000/A3/")
+    .csv("/stream/")
 
 
 
