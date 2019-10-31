@@ -35,10 +35,6 @@ hashtags = csvDF.select("c8")
 words = hashtags.select(explode(split(hashtags.c8, ",")))
 words = words.withColumnRenamed("col", "Hashtags")
 
-#if you dont specify a value for awaittermination, then this will run forever without giving a chance to the subsequent queries
-word = words.groupBy("Hashtags").count().orderBy("count", ascending = False).limit(5).writeStream.outputMode("complete").format("console").start().awaitTermination(100)
 
-
-df1 = csvDF.select("11", "c13", "c14").withColumn("ratio", (csvDF.c13/ csvDF.c14))
-
-pop = df1.groupBy("11").agg(F.max("ratio")).orderBy("max(ratio)", ascending = False).withColumnRenamed("max(ratio)", "FRRatio").withColumnRenamed("11", "name").limit(1).writeStream.outputMode("complete").format("console").start().awaitTermination(20)
+word = words.groupBy("Hashtags").count().orderBy("count", ascending = False).limit(5).writeStream.outputMode("complete").format("console").start().awaitTermination(60)
+spark.stop()
