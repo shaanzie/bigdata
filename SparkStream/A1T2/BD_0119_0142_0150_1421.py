@@ -28,11 +28,14 @@ csvDF = spark \
     .readStream \
     .option("sep", ";") \
     .schema(userSchema) \
-    .csv("/stream/")
+    .csv("hdfs://localhost:9000/stream/")
 
 
 
 df1 = csvDF.select("11", "c13", "c14").withColumn("ratio", (csvDF.c13/ csvDF.c14))
 
 pop = df1.groupBy("11").agg(F.max("ratio")).orderBy("max(ratio)", ascending = False).withColumnRenamed("max(ratio)", "FRRatio").withColumnRenamed("11", "name").limit(1).writeStream.outputMode("complete").format("console").start().awaitTermination(60)
+
+# pop.stop()
+
 spark.stop()
