@@ -14,10 +14,10 @@ def aggregate_tweets_count(new_values, total_sum):
 
 def takeAndPrint(rdd):
 	taken = rdd.take(4)
-	taken = taken.transform(lambda rdd: rdd.sortBy(lambda x: x[0], ascending = False))
+	taken.sort()
 	i = 0
 	for record in taken[:5]:
-		if(i != 2):
+		if(i != 4):
 			print(record[0], end = ", ")
 		else:
 			print(record[0])
@@ -37,10 +37,7 @@ conf=SparkConf()
 conf.setAppName("A2")
 sc=SparkContext(conf=conf)
 
-c = float(sys.argv[1])
-t = float(sys.argv[2])
-
-ssc=StreamingContext(sc, c)
+ssc=StreamingContext(sc, 2)
 ssc.checkpoint("/checkpoint_BIGDATA")
 
 dataStream=ssc.socketTextStream("localhost",9009)
@@ -58,5 +55,5 @@ sorted_.foreachRDD(takeAndPrint)
 
 
 ssc.start()
-ssc.awaitTermination(t)
+ssc.awaitTermination(100)
 ssc.stop()
