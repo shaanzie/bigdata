@@ -13,14 +13,14 @@ def aggregate_tweets_count(new_values, total_sum):
 
 
 def takeAndPrint(rdd):
-	taken = rdd.take(4)
+	taken = rdd.take(5)
 	taken.sort()
 	i = 0
 	for record in taken[:5]:
 		if(i != 4):
-			print(record[0], end = ", ")
+			print(record[0], end = ",")
 		else:
-			print(record[0])
+			print(record[0], end = "\n")
 		i+=1
 
 def cleanData(x):
@@ -37,12 +37,17 @@ conf=SparkConf()
 conf.setAppName("A2")
 sc=SparkContext(conf=conf)
 
-ssc=StreamingContext(sc, 2)
+batch_size = sys.argv[1]
+window_size = sys.argv[2]
+
+ssc=StreamingContext(sc, float(batch_size))
 ssc.checkpoint("/checkpoint_BIGDATA")
 
-dataStream=ssc.socketTextStream("localhost",9009)
+dataStream = ssc.socketTextStream("localhost",9009)
 
-tweet=dataStream.map(lambda w: w.split(';')[7])
+datawindow = dataStream.window(float(window_size), 1)
+
+tweet = datawindow.map(lambda w: w.split(';')[7])
 tweet1 = tweet.flatMap(lambda w: cleanData(w))
 tweet1 = tweet1.map(lambda x: (x, 1))
 
@@ -55,5 +60,5 @@ sorted_.foreachRDD(takeAndPrint)
 
 
 ssc.start()
-ssc.awaitTermination(100)
+ssc.awaitTermination(25)
 ssc.stop()
