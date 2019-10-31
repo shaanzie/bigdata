@@ -37,8 +37,8 @@ conf=SparkConf()
 conf.setAppName("A2")
 sc=SparkContext(conf=conf)
 
-batch_size = sys.argv[1]
-window_size = sys.argv[2]
+batch_size = sys.argv[2]
+window_size = sys.argv[1]
 
 ssc=StreamingContext(sc, float(batch_size))
 ssc.checkpoint("/checkpoint_BIGDATA")
