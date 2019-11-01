@@ -36,7 +36,13 @@ words = hashtags.select(explode(split(hashtags.c8, ",")))
 words = words.withColumnRenamed("col", "Hashtags")
 
 
+<<<<<<< HEAD:SparkStream/A1T1.py
 word = words.groupBy("Hashtags").count().orderBy("count", ascending = False).limit(5).writeStream.outputMode("complete").format("console").start()
 word.awaitTermination(30)
 word.stop()
+=======
+word = words.groupBy("Hashtags").count().orderBy("count", ascending = False).limit(5).writeStream.outputMode("complete").format("console").start().awaitTermination(60)
+
+# word.stop()
+>>>>>>> 648730c2516696cea3ff9a6e8f43eb15a33e0876:SparkStream/A1T1/BD_0119_0142_0150_1421.py
 spark.stop()

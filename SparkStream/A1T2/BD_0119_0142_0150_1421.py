@@ -28,16 +28,23 @@ csvDF = spark \
     .readStream \
     .option("sep", ";") \
     .schema(userSchema) \
-    .csv("hdfs://localhost:9000/A3/")
+    .csv("hdfs://localhost:9000/stream/")
 
 
 
 df1 = csvDF.select("11", "c13", "c14").withColumn("ratio", (csvDF.c13/ csvDF.c14))
 
+<<<<<<< HEAD:SparkStream/A1T2.py
 pop = df1.groupBy("11").agg(F.max("ratio")).orderBy("max(ratio)", ascending = False).withColumnRenamed("max(ratio)", "FRRatio").withColumnRenamed("11", "name").limit(1)
 
 pop1 = pop.writeStream.outputMode("complete").format("console").start()
 
 pop1.awaitTermination(20)
 pop1.stop()
+=======
+pop = df1.groupBy("11").agg(F.max("ratio")).orderBy("max(ratio)", ascending = False).withColumnRenamed("max(ratio)", "FRRatio").withColumnRenamed("11", "name").limit(1).writeStream.outputMode("complete").format("console").start().awaitTermination(60)
+
+# pop.stop()
+
+>>>>>>> 648730c2516696cea3ff9a6e8f43eb15a33e0876:SparkStream/A1T2/BD_0119_0142_0150_1421.py
 spark.stop()
