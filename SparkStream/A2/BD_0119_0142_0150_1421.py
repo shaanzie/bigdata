@@ -1,4 +1,3 @@
-
 import findspark
 findspark.init()
 
@@ -49,8 +48,8 @@ dataStream\
 	.map(lambda w: w.split(';')[7])\
 	.flatMap(lambda w: cleanData(w))\
 	.map(lambda x: (x, 1))\
-	.reduceByKey(lambda x, y: x + y)\
-	.transform(lambda rdd: rdd.sortBy(lambda x: (x[1], x[0]), ascending = False))\
+	.reduceByKey(lambda x,y: x + y)\
+	.transform(lambda rdd: rdd.sortBy(lambda x: (-x[1], x[0]), ascending = True))\
 	.foreachRDD(takeAndPrint)
 
 ssc.start()
