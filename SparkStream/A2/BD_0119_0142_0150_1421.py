@@ -29,7 +29,7 @@ def cleanData(x):
 		if hashtag == " " or hashtag == "  " or hashtag == "":
 		  	pass
 		else:
-		 	clean.append(hashtag)
+			clean.append(hashtag)
 	return clean
 
 conf=SparkConf()
@@ -44,11 +44,12 @@ ssc.checkpoint("/checkpoint_BIGDATA")
 
 dataStream = ssc.socketTextStream("localhost",9009)
 
-dataStream.window(float(window_size), 1)\
+dataStream\
+	.window(float(window_size), 1)\
 	.map(lambda w: w.split(';')[7])\
 	.flatMap(lambda w: cleanData(w))\
 	.map(lambda x: (x, 1))\
-	.reduceByKeyAndWindow(lambda x, y: x + y, None, float(window_size), 1)\
+	.reduceByKey(lambda x, y: x + y)\
 	.transform(lambda rdd: rdd.sortBy(lambda x: (x[1], x[0]), ascending = False))\
 	.foreachRDD(takeAndPrint)
 
