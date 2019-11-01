@@ -38,6 +38,6 @@ pop = df1.groupBy("11").agg(F.max("ratio")).orderBy("max(ratio)", ascending = Fa
 
 pop1 = pop.writeStream.outputMode("complete").format("console").start()
 
-pop1.awaitTermination(20)
+pop1.awaitTermination(100)
 pop1.stop()
 spark.stop()

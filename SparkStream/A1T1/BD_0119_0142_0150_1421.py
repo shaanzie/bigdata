@@ -37,6 +37,6 @@ words = words.withColumnRenamed("col", "Hashtags")
 
 
 word = words.groupBy("Hashtags").count().orderBy("count", ascending = False).limit(5).writeStream.outputMode("complete").format("console").start()
-word.awaitTermination(30)
+word.awaitTermination(100)
 word.stop()
 spark.stop()

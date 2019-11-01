@@ -39,24 +39,23 @@ sc=SparkContext(conf=conf)
 batch_size = sys.argv[2]
 window_size = sys.argv[1]
 
-ssc=StreamingContext(sc, float(batch_size))
+ssc=StreamingContext(sc, float(window_size))
 ssc.checkpoint("/checkpoint_BIGDATA")
 
 dataStream = ssc.socketTextStream("localhost",9009)
 
-datawindow = dataStream.window(float(window_size), 1)
+tweet = dataStream.map(lambda w: w.split(';')[7])
 
-tweet = datawindow.map(lambda w: w.split(';')[7])
 tweet1 = tweet.flatMap(lambda w: cleanData(w))
+
 tweet1 = tweet1.map(lambda x: (x, 1))
 
-
-totalcount = tweet1.updateStateByKey(aggregate_tweets_count)
+totalcount = tweet1.reduceByKeyAndWindow(lambda x, y: x + y, None, float(batch_size), 1)
 
 sorted_ = totalcount.transform(lambda rdd: rdd.sortBy(lambda x: (x[1], x[0]), ascending = False))
 
 sorted_.foreachRDD(takeAndPrint)
-
+# sorted_.pprint()
 
 ssc.start()
 ssc.awaitTermination(25)
