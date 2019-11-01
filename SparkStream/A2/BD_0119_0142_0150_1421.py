@@ -44,18 +44,13 @@ ssc.checkpoint("/checkpoint_BIGDATA")
 
 dataStream = ssc.socketTextStream("localhost",9009)
 
-tweet = dataStream.map(lambda w: w.split(';')[7])
-
-tweet1 = tweet.flatMap(lambda w: cleanData(w))
-
-tweet1 = tweet1.map(lambda x: (x, 1))
-
-totalcount = tweet1.reduceByKeyAndWindow(lambda x, y: x + y, None, float(window_size), 1)
-
-sorted_ = totalcount.transform(lambda rdd: rdd.sortBy(lambda x: (x[1], x[0]), ascending = False))
-
-sorted_.foreachRDD(takeAndPrint)
-# sorted_.pprint()
+dataStream.window(float(window_size), 1)\
+	.map(lambda w: w.split(';')[7])\
+	.flatMap(lambda w: cleanData(w))\
+	.map(lambda x: (x, 1))\
+	.reduceByKeyAndWindow(lambda x, y: x + y, None, float(window_size), 1)\
+	.transform(lambda rdd: rdd.sortBy(lambda x: (x[1], x[0]), ascending = False))\
+	.foreachRDD(takeAndPrint)
 
 ssc.start()
 ssc.awaitTermination(25)
