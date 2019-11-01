@@ -30,7 +30,7 @@ s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 s.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
 s.bind((TCP_IP,TCP_PORT))	
 
-csvfile=open('FIFA_modded_small_1.csv','r')
+csvfile=open('FIFA_modded_small.csv','r')
 fieldnames = ("ID","language","Date","source","len","bool", "likes","Hashtags","Data1","Data2","Data3","Data4")
 reader=csv.reader(csvfile,fieldnames)
 time.sleep(2)
