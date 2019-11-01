@@ -28,7 +28,7 @@ csvDF = spark \
     .readStream \
     .option("sep", ";") \
     .schema(userSchema) \
-    .csv("hdfs://localhost:9000/A3/new/")
+    .csv("hdfs://localhost:9000/stream/")
 
 
 hashtags = csvDF.select("c8")
